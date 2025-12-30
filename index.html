@@ -18,15 +18,30 @@ body {
     padding-top: env(safe-area-inset-top, 5px);
     padding-bottom: env(safe-area-inset-bottom, 10px);
     touch-action: manipulation;
+    margin-top: 8px;
 }
 
-/* Header */
-header { padding: 0.5rem 1rem !important; }
+header {padding: 1.5rem 1rem 0.5rem 1rem !important; /* Aumenta margem no topo */ }
 
-/* Container do Jogo com Ajuda Lateral */
-.game-area {
-    display: flex; align-items: center; justify-content: center;
-    gap: 15px; width: 100%; max-width: 500px; margin: 0 auto; flex: 1;
+/* Área principal centralizada */
+.game-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    gap: 15px;
+    padding: 10px;
+}
+
+#grid {
+    display: grid;
+    gap: 6px;
+    padding: 12px;
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 20px;
+    border: 1px solid rgba(51, 65, 85, 0.5);
 }
 
 .tile {
@@ -34,57 +49,53 @@ header { padding: 0.5rem 1rem !important; }
     text-transform: uppercase; display: flex; align-items: center; justify-content: center;
     font-weight: 800; border: 2px solid #334155; border-radius: 10px;
     background: #1e293b; 
-    width: 11vw; height: 11vw; max-width: 52px; max-height: 52px;
-    font-size: 1.3rem; user-select: none; color: #f8fafc;
+    width: 12vmin; height: 12vmin; max-width: 50px; max-height: 50px;
+    font-size: 1.4rem; user-select: none; color: #f8fafc;
 }
 
-/* Power-ups Verticais à Direita */
-/* Container lateral */
-.side-menu { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 16px; 
-    padding-right: 10px; /* Dá espaço para a sombra projetada à direita se houver */
+/* Menu de Ajuda Horizontal para caber na tela */
+.help-menu {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 5px;
 }
 
 .btn-side {
-    width: 54px; 
-    height: 64px; 
+    width: 75px; 
+    height: 44px; 
     display: flex; 
-    flex-direction: column;
+    flex-direction: row;
     align-items: center; 
     justify-content: center; 
-    border-radius: 16px; /* Bordas mais arredondadas como na foto */
+    gap: 8px;
+    border-radius: 14px;
     background: #1e293b; 
     border: 2px solid #334155; 
-    /* A moldura preta 3D */
-    box-shadow: 0 6px 0 0 #000000; 
+    box-shadow: 0 4px 0 0 #000000; 
     transition: all 0.1s; 
     cursor: pointer;
     position: relative;
-    outline: none;
-    /* Impede que a sombra seja cortada */
-    margin-bottom: 8px; 
 }
 
 .btn-side:active { 
-    transform: translateY(4px); 
-    box-shadow: 0 2px 0 0 #000000;
-    margin-bottom: 12px;
+    transform: translateY(2px); 
+    box-shadow: 0 1px 0 0 #000000;
 }
 
-.btn-side i { 
-    font-size: 1.4rem; 
-    margin-bottom: 4px;
-}
+.btn-side i { font-size: 1.1rem; }
+.btn-side span { font-size: 12px; font-weight: 800; color: #f1f5f9; }
 
-.btn-side span { 
-    font-size: 11px; 
-    font-weight: 800; 
-    color: #f1f5f9;
+/* Teclado na base */
+.keyboard-area {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 8px 20px 8px; /* Adiciona 20px de margem na parte inferior */
+    flex-shrink: 0;
 }
-
-/* Teclado Otimizado */
 .key-btn {
     height: 44px; background: #334155; border-radius: 8px;
     font-weight: 700; font-size: 0.9rem; border-bottom: 3px solid #1e293b;
