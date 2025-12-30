@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>WordMaster Pro 4.5</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #0f172a; color: #f1f5f9;
+    overflow: hidden; height: 100svh; 
+    display: flex; flex-direction: column;
+    padding-top: env(safe-area-inset-top, 5px);
+    padding-bottom: env(safe-area-inset-bottom, 10px);
+    touch-action: manipulation;
+}
+
+/* Header */
+header { padding: 0.5rem 1rem !important; }
+
+/* Container do Jogo com Ajuda Lateral */
+.game-area {
+    display: flex; align-items: center; justify-content: center;
+    gap: 15px; width: 100%; max-width: 500px; margin: 0 auto; flex: 1;
+}
+
+.tile {
+    transition: transform 0.2s, border-color 0.2s, background-color 0.4s;
+    text-transform: uppercase; display: flex; align-items: center; justify-content: center;
+    font-weight: 800; border: 2px solid #334155; border-radius: 10px;
+    background: #1e293b; 
+    width: 11vw; height: 11vw; max-width: 52px; max-height: 52px;
+    font-size: 1.3rem; user-select: none; color: #f8fafc;
+}
+
+/* Power-ups Verticais à Direita */
+/* Container lateral */
+.side-menu { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+    padding-right: 10px; /* Dá espaço para a sombra projetada à direita se houver */
+}
+
+.btn-side {
+    width: 54px; 
+    height: 64px; 
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+    border-radius: 16px; /* Bordas mais arredondadas como na foto */
+    background: #1e293b; 
+    border: 2px solid #334155; 
+    /* A moldura preta 3D */
+    box-shadow: 0 6px 0 0 #000000; 
+    transition: all 0.1s; 
+    cursor: pointer;
+    position: relative;
+    outline: none;
+    /* Impede que a sombra seja cortada */
+    margin-bottom: 8px; 
+}
+
+.btn-side:active { 
+    transform: translateY(4px); 
+    box-shadow: 0 2px 0 0 #000000;
+    margin-bottom: 12px;
+}
+
+.btn-side i { 
+    font-size: 1.4rem; 
+    margin-bottom: 4px;
+}
+
+.btn-side span { 
+    font-size: 11px; 
+    font-weight: 800; 
+    color: #f1f5f9;
+}
+
+/* Teclado Otimizado */
+.key-btn {
+    height: 44px; background: #334155; border-radius: 8px;
+    font-weight: 700; font-size: 0.9rem; border-bottom: 3px solid #1e293b;
+    display: flex; align-items: center; justify-content: center; flex: 1; color: #f1f5f9;
+}
+.key-special { flex: 1.6; background: #475569; font-size: 0.75rem; }
+
+/* Estados */
+.tile-filled { border-color: #64748b; animation: pop 0.1s ease-in-out; }
+.tile-selected { border-color: #818cf8; box-shadow: 0 0 15px rgba(129, 140, 248, 0.4); z-index: 10; }
+.correct { background-color: #10b981 !important; border-color: #10b981 !important; color: white; }
+.present { background-color: #f59e0b !important; border-color: #f59e0b !important; color: white; }
+.absent { background-color: #475569 !important; border-color: #475569 !important; color: #94a3b8; }
+
+@keyframes pop { 50% { transform: scale(1.1); } }
+.flip { animation: flip-tile 0.5s ease forwards; }
+@keyframes flip-tile { 0% { transform: rotateX(0); } 50% { transform: rotateX(90deg); } 100% { transform: rotateX(0); } }
+.shake { animation: shake 0.5s; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25%, 75% { transform: translateX(-5px); } 50% { transform: translateX(5px); } }
+
+#toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); z-index: 200; opacity: 0; transition: all 0.3s; pointer-events: none; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
+.progress-bar { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); transition: width 0.5s ease; }
+</style>
+</head>
+<body class="px-2">
+
+<div class="w-full h-1.5 bg-slate-800 absolute top-0 left-0">
+    <div id="level-progress" class="progress-bar" style="width: 0%"></div>
+</div>
+
+<div id="toast" class="bg-slate-800 border border-slate-600 px-4 py-2 rounded-xl shadow-2xl text-sm font-bold text-white flex items-center gap-2">
+    <i class="fa-solid fa-circle-info text-indigo-400"></i> <span id="toast-msg"></span>
+</div>
+
+<header class="pt-4 pb-2 flex justify-between items-center max-w-md mx-auto w-full">
+    <button onclick="changeDifficulty()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 active:scale-95">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="text-center">
+        <h1 class="text-white font-black text-2xl tracking-tighter italic leading-none">WORDMASTER</h1>
+        <p id="level-indicator" class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-1">Nível</p>
+    </div>
+    <div class="bg-indigo-600/20 px-3 py-1.5 rounded-xl border border-indigo-500/30 flex items-center gap-2">
+        <i class="fa-solid fa-coins text-yellow-400 text-sm"></i>
+        <span id="balance" class="font-bold text-white">0</span>
+    </div>
+</header>
+
+<main class="game-area flex items-center justify-center gap-4 w-full max-w-md mx-auto flex-1 min-h-0">
+    <div id="grid" class="grid gap-1.5 p-2.5 bg-slate-800/40 rounded-2xl border border-slate-700/50"></div>
+    
+    <div class="side-menu">
+        <button onclick="powerUp('hint')" class="btn-side" title="Dica">
+            <i class="fa-solid fa-lightbulb text-yellow-400"></i>
+            <span>30</span>
+        </button>
+        <button onclick="powerUp('reveal')" class="btn-side" title="Revelar Letra">
+            <i class="fa-solid fa-wand-magic-sparkles text-indigo-400"></i>
+            <span>45</span>
+        </button>
+    </div>
+</main>
+
+<div class="max-w-md mx-auto w-full flex flex-col gap-2 mb-2 px-1">
+    <div id="keyboard" class="flex flex-col gap-1.5">
+        <div class="flex gap-1.5 justify-center w-full" id="row-1"></div>
+        <div class="flex gap-1.5 justify-center w-full" id="row-2"></div>
+        <div class="flex gap-1.5 justify-center w-full" id="row-3"></div>
+    </div>
+</div>
+
+<div id="start-overlay" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-6">
+    <div class="w-full max-w-sm text-center">
+        <div class="mb-8 relative inline-block">
+            <div class="w-20 h-20 bg-indigo-600 rounded-3xl rotate-12 absolute inset-0 opacity-20 animate-pulse"></div>
+            <i class="fa-solid fa-cube text-6xl text-indigo-600 transform rotate-12"></i>
+            <i class="fa-solid fa-font text-2xl text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></i>
+        </div>
+        <h2 class="text-4xl font-black mb-2 text-white italic tracking-tighter">WORDMASTER</h2>
+        <p class="text-slate-500 text-xs mb-10 font-bold uppercase tracking-[0.3em]">Desafio de Vocabulário</p>
+        
+        <div class="grid grid-cols-1 gap-4">
+            <button onclick="init(4)" class="group flex items-center bg-slate-900 border border-slate-800 p-4 rounded-2xl hover:border-emerald-500/50 transition-all active:scale-95">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 font-black text-xl">4</div>
+                <div class="ml-4 text-left">
+                    <div class="text-white font-extrabold text-base leading-none">Nível Fácil</div>
+                    <div class="text-slate-500 text-[10px] mt-1 uppercase font-bold tracking-wider">Palavras de 4 Letras</div>
+                </div>
+                <i class="fa-solid fa-chevron-right ml-auto text-slate-700 group-hover:text-emerald-500"></i>
+            </button>
+            
+            <button onclick="init(5)" class="group flex items-center bg-slate-900 border border-slate-800 p-4 rounded-2xl hover:border-sky-500/50 transition-all active:scale-95">
+                <div class="w-12 h-12 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-500 font-black text-xl">5</div>
+                <div class="ml-4 text-left">
+                    <div class="text-white font-extrabold text-base leading-none">Nível Clássico</div>
+                    <div class="text-slate-500 text-[10px] mt-1 uppercase font-bold tracking-wider">Palavras de 5 Letras</div>
+                </div>
+                <i class="fa-solid fa-chevron-right ml-auto text-slate-700 group-hover:text-sky-500"></i>
+            </button>
+            
+            <button onclick="init(6)" class="group flex items-center bg-slate-900 border border-slate-800 p-4 rounded-2xl hover:border-purple-500/50 transition-all active:scale-95">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500 font-black text-xl">6</div>
+                <div class="ml-4 text-left">
+                    <div class="text-white font-extrabold text-base leading-none">Nível Difícil</div>
+                    <div class="text-slate-500 text-[10px] mt-1 uppercase font-bold tracking-wider">Palavras de 6 Letras</div>
+                </div>
+                <i class="fa-solid fa-chevron-right ml-auto text-slate-700 group-hover:text-purple-500"></i>
+            </button>
+            
+            <button onclick="openResetModal()" class="mt-4 py-2 text-slate-700 hover:text-red-500 font-bold text-[10px] uppercase tracking-widest transition-colors">Limpar dados do jogo</button>
+        </div>
+    </div>
+</div>
+
+<div id="end-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-6 hidden">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-xs rounded-3xl p-6 relative text-center">
+        <div id="end-icon" class="text-6xl mb-4"></div>
+        <h2 id="end-title" class="text-3xl font-black text-white mb-2 italic"></h2>
+        <div class="bg-slate-800/50 rounded-xl p-4 mb-6 border border-slate-700">
+            <p id="end-word" class="text-2xl font-black text-indigo-400 tracking-[0.2em] uppercase"></p>
+            <p id="end-meaning" class="text-xs text-slate-400 mt-2 italic font-medium"></p>
+        </div>
+        <button onclick="playNext()" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold active:scale-95 shadow-lg shadow-indigo-600/20 mb-3">PRÓXIMA PALAVRA</button>
+        <button onclick="changeDifficulty()" class="w-full py-2 text-slate-500 font-bold text-xs uppercase tracking-widest">Sair para o Menu</button>
+    </div>
+</div>
+
+<div id="reset-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-6 hidden">
+    <div class="absolute inset-0 bg-black/90 backdrop-blur-sm"></div>
+    <div class="bg-slate-900 border border-red-500/20 w-full max-w-xs rounded-3xl p-6 text-center">
+        <i class="fa-solid fa-triangle-exclamation text-3xl text-red-500 mb-4"></i>
+        <h2 class="text-xl font-black text-white mb-2 uppercase italic">Limpar progresso?</h2>
+        <p class="text-slate-500 text-sm mb-8">Todas as suas moedas e palavras resolvidas serão apagadas permanentemente.</p>
+        <button onclick="confirmReset()" class="w-full py-4 bg-red-600 text-white rounded-xl font-bold mb-2 active:scale-95">REINICIAR TUDO</button>
+        <button onclick="closeResetModal()" class="w-full py-4 bg-slate-800 text-slate-300 rounded-xl font-bold active:scale-95">CANCELAR</button>
+    </div>
+</div>
+
+<script>
+const WORDS_DB = {
+    4: [{w:"ALVO",h:"Mira"}, {w:"BOLA",h:"Objeto esférico"}, {w:"CAFE",h:"Bebida preta"}, {w:"DOCE",h:"Sobremesa"}, {w:"FOGO",h:"Queima"}, {w:"GELO",h:"Água fria"}, {w:"LUTA",h:"Combate"}, {w:"VIDA",h:"Existência"}, {w:"CASA",h:"Moradia"}, {w:"DADO",h:"Cubo"}, {w:"FADA",h:"Ser mágico"}, {w:"GATO",h:"animal doméstico"}, {w:"HOJE",h:"Dia atual"}, {w:"JOGO",h:"Diversão ou esporte"}, {w:"LAMA",h:"Terra molhada"}, {w:"MESA",h:"Móvel"}, {w:"NAVE",h:"Veículo espacial"}, {w:"OURO",h:"Metal precioso"}, {w:"PATO",h:"Ave aquática"}, {w:"REDE",h:"Malha de fios"}, {w:"SINO",h:"Instrumento sonoro"}, {w:"TELA",h:"Superfície de exibição"}, {w:"URSO",h:"Grande mamífero"}, {w:"VOTO",h:"Escolha"}, {w:"ZELE",h:"Cuidado (verbo)"}, {w:"AUGE",h:"O ponto máximo"}, {w:"RARO",h:"algo incomum"}, {w:"VAGO",h:"Espaço vazio"}, {w:"ZELO",h:"Cuidado extremo"}, {w:"FIXO",h:"Não se move"}],
+    5: [{w:"SAGAZ",h:"Esperto"}, {w:"NOBRE",h:"Digno"}, {w:"AMIGO",h:"Parceiro"}, {w:"IDEIA",h:"Pensamento"}, {w:"TERRA",h:"Planeta"}, {w:"CHAVE",h:"Abre portas"}, {w:"FORTE",h:"Resistente"}, {w:"PORTA",h:"Entrada"}, {w:"BRAVO",h:"Corajoso"}, {w:"CARRO",h:"Veículo"}, {w:"DENTE",h:"Parte da boca"}, {w:"FESTA",h:"Comemoração"}, {w:"GLOBO",h:"Esfera terrestre"}, {w:"HONRA",h:"Dignidade"}, {w:"JOVEM",h:"Nova idade"}, {w:"LIVRO",h:"Objeto de leitura"}, {w:"MUNDO",h:"Planeta"}, {w:"NAVIO",h:"Embarcação grande"}, {w:"PEDRA",h:"Mineral sólido"}, {w:"QUASE",h:"Por pouco"}, {w:"ROUPA",h:"Vestimenta"}, {w:"SONHO",h:"Desejo ou visão"}, {w:"TEMPO",h:"Cronologia"}, {w:"UNIAO",h:"Junção"}, {w:"VELOZ",h:"Rápido"}, {w:"EXAME",h:"Teste ou avaliação"}, {w:"MAGOA",h:"Sentimento de tristeza"}, {w:"EXODO",h:"Saída em massa"}, {w:"GORJA",h:"Garganta ou entrada"}, {w:"VIGOR",h:"Força e energia"}],
+    6: [{w:"JARDIM",h:"Local com flores"}, {w:"FUTURO",h:"Amanhã"}, {w:"BRANCO",h:"Cor clara"}, {w:"ESCURO",h:"Sem luz"}, {w:"ESTUDO",h:"Aprender"}, {w:"POESIA",h:"Versos"}, {w:"CIDADE",h:"Centro urbano"}, {w:"DUREZA",h:"Resistência"}, {w:"ESCOLA",h:"Local de ensino"}, {w:"FRUTAS",h:"Alimentos naturais"}, {w:"GRANDE",h:"Vasto"}, {w:"HABITO",h:"Costume"}, {w:"IRMAOS",h:"Parentesco"}, {w:"JANELA",h:"Abertura na parede"}, {w:"LEITURA",h:"Ato de ler"}, {w:"MUSICA",h:"Som harmonioso"}, {w:"NUMERO",h:"Algarismo"}, {w:"ORIGEM",h:"Princípio"}, {w:"PESSOA",h:"Indivíduo"}, {w:"QUARTO",h:"Cômodo da casa"}, {w:"REVISTA",h:"Publicação periódica"}, {w:"SORRIR",h:"Expressão de alegria"}, {w:"TREINO",h:"Exercício"}, {w:"VIAGEM",h:"Deslocamento"}, {w:"XADREZ",h:"Jogo de tabuleiro"}, {w:"MERITO",h:"Valor ou merecimento"}, {w:"ANSIA",h:"Desejo forte ou agonia"}, {w:"DEBITO",h:"Dívida financeira"}, {w:"CORTES",h:"Pessoa educada"}, {w:"INDICE",h:"Lista ou indicador"}]
+};
+
+let state = {
+    target: "", hint: "", size: 5, attempts: 0, locked: false, currentGuess: [], cursorIndex: 0,
+    coins: parseInt(localStorage.getItem('wm_coins')) || 50,
+    played: JSON.parse(localStorage.getItem('wm_played')) || []
+};
+
+function openResetModal() { document.getElementById('reset-modal').classList.remove('hidden'); }
+function closeResetModal() { document.getElementById('reset-modal').classList.add('hidden'); }
+function confirmReset() { state.played = []; localStorage.clear(); location.reload(); }
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').innerText = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function updateBalance(val) {
+    state.coins += val;
+    document.getElementById('balance').innerText = state.coins;
+    localStorage.setItem('wm_coins', state.coins);
+}
+
+function updateProgressBar() {
+    const totalWords = WORDS_DB[state.size].length;
+    const playedCount = state.played.filter(w => w.length === state.size).length;
+    const percent = Math.min(100, (playedCount / totalWords) * 100);
+    document.getElementById('level-progress').style.width = `${percent}%`;
+    let levelName = state.size === 4 ? "FÁCIL" : state.size === 5 ? "CLÁSSICO" : "DIFÍCIL";
+    document.getElementById('level-indicator').innerText = `${levelName} • ${playedCount}/${totalWords}`;
+}
+
+function init(size) {
+    state.size = size;
+    let available = WORDS_DB[size].filter(o => !state.played.includes(o.w));
+    if (available.length === 0) available = WORDS_DB[size];
+    const selection = available[Math.floor(Math.random() * available.length)];
+    state.target = selection.w.toUpperCase();
+    state.hint = selection.h;
+    state.attempts = 0; state.locked = false;
+    state.currentGuess = new Array(size).fill("");
+    state.cursorIndex = 0;
+
+    document.querySelectorAll('.fixed').forEach(el => { if(el.id !== 'toast') el.classList.add('hidden'); });
+    document.getElementById('balance').innerText = state.coins;
+    buildGrid();
+    buildKeyboard();
+    updateGridVisuals();
+    updateProgressBar();
+}
+
+function buildGrid() {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    grid.style.gridTemplateColumns = `repeat(${state.size}, minmax(0, 1fr))`;
+    for (let i = 0; i < 6 * state.size; i++) {
+        const tile = document.createElement('div');
+        tile.id = `tile-${i}`;
+        tile.className = "tile";
+        tile.onclick = () => {
+            const row = Math.floor(i / state.size);
+            if (!state.locked && row === state.attempts) {
+                state.cursorIndex = i % state.size;
+                updateGridVisuals();
+            }
+        };
+        grid.appendChild(tile);
+    }
+}
+
+function buildKeyboard() {
+    const rows = [["Q","W","E","R","T","Y","U","I","O","P"], ["A","S","D","F","G","H","J","K","L", "⌫"], ["Z","X","C","V","B","N","M", "ENTER"]];
+    rows.forEach((r, i) => {
+        const rowEl = document.getElementById(`row-${i+1}`);
+        rowEl.innerHTML = '';
+        r.forEach(k => {
+            const btn = document.createElement('div');
+            btn.id = `key-${k}`;
+            btn.innerText = k === '⌫' ? '' : k;
+            if(k === '⌫') btn.innerHTML = '<i class="fa-solid fa-delete-left"></i>';
+            btn.className = `key-btn ${k.length > 1 ? 'key-special' : ''}`;
+            btn.onclick = () => handleInput(k);
+            rowEl.appendChild(btn);
+        });
+    });
+}
+
+function handleInput(key) {
+    if (state.locked) return;
+    if (key === '⌫') {
+        if (state.currentGuess[state.cursorIndex] !== "") state.currentGuess[state.cursorIndex] = "";
+        else if (state.cursorIndex > 0) { state.cursorIndex--; state.currentGuess[state.cursorIndex] = ""; }
+        updateGridVisuals();
+    } else if (key === 'ENTER') {
+        if (!state.currentGuess.includes("")) checkGuess();
+        else triggerShake();
+    } else {
+        state.currentGuess[state.cursorIndex] = key;
+        if (state.cursorIndex < state.size - 1) state.cursorIndex++;
+        updateGridVisuals();
+    }
+}
+
+function updateGridVisuals() {
+    const start = state.attempts * state.size;
+    for(let i = 0; i < state.size; i++) {
+        const tile = document.getElementById(`tile-${start + i}`);
+        if(!tile) continue;
+        tile.innerText = state.currentGuess[i];
+        tile.className = `tile ${state.currentGuess[i] ? 'tile-filled' : ''} ${i === state.cursorIndex && !state.locked ? 'tile-selected' : ''}`;
+    }
+}
+
+async function checkGuess() {
+    state.locked = true;
+    updateGridVisuals();
+    const guess = state.currentGuess.join('');
+    const targetArr = state.target.split('');
+    const startIdx = state.attempts * state.size;
+    let results = new Array(state.size).fill('absent');
+    let letterCounts = {};
+    targetArr.forEach(l => letterCounts[l] = (letterCounts[l] || 0) + 1);
+
+    state.currentGuess.forEach((char, i) => { if (char === targetArr[i]) { results[i] = 'correct'; letterCounts[char]--; } });
+    state.currentGuess.forEach((char, i) => { if (results[i] !== 'correct' && letterCounts[char] > 0) { results[i] = 'present'; letterCounts[char]--; } });
+
+    for (let i = 0; i < state.size; i++) {
+        const tile = document.getElementById(`tile-${startIdx + i}`);
+        tile.style.animationDelay = `${i * 150}ms`;
+        tile.classList.add('flip');
+        setTimeout(() => {
+            tile.classList.add(results[i]);
+            const key = document.getElementById(`key-${state.currentGuess[i]}`);
+            if (key) {
+                if (results[i] === 'correct') key.classList.add('correct');
+                else if (results[i] === 'present' && !key.classList.contains('correct')) key.classList.add('present');
+                else if (results[i] === 'absent' && !key.classList.contains('correct') && !key.classList.contains('present')) key.classList.add('absent');
+            }
+        }, (i * 150) + 250);
+    }
+
+    await new Promise(r => setTimeout(r, (state.size * 150) + 500));
+
+    if (guess === state.target) {
+        updateBalance(30); state.played.push(state.target);
+        localStorage.setItem('wm_played', JSON.stringify(state.played));
+        updateProgressBar();
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        if (state.played.filter(w => w.length === state.size).length >= WORDS_DB[state.size].length) showLevelUp();
+        else {
+            document.getElementById('end-title').innerText = "VITÓRIA!";
+            document.getElementById('end-icon').innerHTML = '<i class="fa-solid fa-trophy text-yellow-500 animate-bounce"></i>';
+            document.getElementById('end-word').innerText = state.target;
+            document.getElementById('end-meaning').innerText = state.hint;
+            document.getElementById('end-modal').classList.remove('hidden');
+        }
+    } else if (state.attempts === 5) {
+        updateBalance(5);
+        document.getElementById('end-title').innerText = "FIM DE JOGO";
+        document.getElementById('end-icon').innerHTML = '<i class="fa-regular fa-face-sad-tear text-slate-500"></i>';
+        document.getElementById('end-word').innerText = state.target;
+        document.getElementById('end-meaning').innerText = state.hint;
+        document.getElementById('end-modal').classList.remove('hidden');
+    } else {
+        state.attempts++; state.currentGuess = new Array(state.size).fill("");
+        state.cursorIndex = 0; state.locked = false;
+        updateGridVisuals();
+    }
+}
+
+function showLevelUp() {
+    const modal = document.getElementById('levelup-modal');
+    document.getElementById('levelup-msg').innerText = state.size < 6 ? `Nível ${state.size} Letras Concluído!` : "Você completou tudo!";
+    modal.classList.remove('hidden');
+}
+
+function goToNextLevel() { init(state.size + 1); }
+function triggerShake() {
+    const start = state.attempts * state.size;
+    for(let i=0; i<state.size; i++) {
+        const t = document.getElementById(`tile-${start+i}`);
+        t.classList.remove('shake'); void t.offsetWidth; t.classList.add('shake');
+    }
+    showToast("Complete a palavra");
+}
+
+function playNext() { init(state.size); }
+function changeDifficulty() {
+    document.querySelectorAll('.fixed').forEach(el => { if(el.id !== 'toast') el.classList.add('hidden'); });
+    document.getElementById('start-overlay').classList.remove('hidden');
+}
+
+function powerUp(type) {
+    if (state.locked) return;
+    if (type === 'hint' && state.coins >= 30) { updateBalance(-30); showToast(`DICA: ${state.hint}`); }
+    else if (type === 'reveal' && state.coins >= 45) {
+        updateBalance(-45);
+        for(let i=0; i<state.size; i++) {
+            if(state.currentGuess[i] !== state.target[i]) {
+                state.currentGuess[i] = state.target[i];
+                state.cursorIndex = Math.min(state.size-1, i+1);
+                updateGridVisuals(); break;
+            }
+        }
+    } else showToast("Moedas insuficientes!");
+}
+
+document.addEventListener('keydown', (e) => {
+    if(state.locked) return;
+    const key = e.key.toUpperCase();
+    if (key === 'ENTER') handleInput('ENTER');
+    else if (key === 'BACKSPACE') handleInput('⌫');
+    else if (/^[A-Z]$/.test(key)) handleInput(key);
+});
+</script>
+</body>
+</html>
