@@ -229,8 +229,39 @@ header {padding: 1.5rem 1rem 0.5rem 1rem !important; /* Aumenta margem no topo *
 const WORDS_DB = {
     4: [{w:"ALVO",h:"Mira"}, {w:"BOLA",h:"Objeto esférico"}, {w:"CAFE",h:"Bebida preta"}, {w:"DOCE",h:"Sobremesa"}, {w:"FOGO",h:"Queima"}, {w:"GELO",h:"Água fria"}, {w:"LUTA",h:"Combate"}, {w:"VIDA",h:"Existência"}, {w:"CASA",h:"Moradia"}, {w:"DADO",h:"Cubo"}, {w:"FADA",h:"Ser mágico"}, {w:"GATO",h:"animal doméstico"}, {w:"HOJE",h:"Dia atual"}, {w:"JOGO",h:"Diversão ou esporte"}, {w:"LAMA",h:"Terra molhada"}, {w:"MESA",h:"Móvel"}, {w:"NAVE",h:"Veículo espacial"}, {w:"OURO",h:"Metal precioso"}, {w:"PATO",h:"Ave aquática"}, {w:"REDE",h:"Malha de fios"}, {w:"SINO",h:"Instrumento sonoro"}, {w:"TELA",h:"Superfície de exibição"}, {w:"URSO",h:"Grande mamífero"}, {w:"VOTO",h:"Escolha"}, {w:"ZELE",h:"Cuidado (verbo)"}, {w:"AUGE",h:"O ponto máximo"}, {w:"RARO",h:"algo incomum"}, {w:"VAGO",h:"Espaço vazio"}, {w:"ZELO",h:"Cuidado extremo"}, {w:"FIXO",h:"Não se move"}],
     5: [{w:"SAGAZ",h:"Esperto"}, {w:"NOBRE",h:"Digno"}, {w:"AMIGO",h:"Parceiro"}, {w:"IDEIA",h:"Pensamento"}, {w:"TERRA",h:"Planeta"}, {w:"CHAVE",h:"Abre portas"}, {w:"FORTE",h:"Resistente"}, {w:"PORTA",h:"Entrada"}, {w:"BRAVO",h:"Corajoso"}, {w:"CARRO",h:"Veículo"}, {w:"DENTE",h:"Parte da boca"}, {w:"FESTA",h:"Comemoração"}, {w:"GLOBO",h:"Esfera terrestre"}, {w:"HONRA",h:"Dignidade"}, {w:"JOVEM",h:"Nova idade"}, {w:"LIVRO",h:"Objeto de leitura"}, {w:"MUNDO",h:"Planeta"}, {w:"NAVIO",h:"Embarcação grande"}, {w:"PEDRA",h:"Mineral sólido"}, {w:"QUASE",h:"Por pouco"}, {w:"ROUPA",h:"Vestimenta"}, {w:"SONHO",h:"Desejo ou visão"}, {w:"TEMPO",h:"Cronologia"}, {w:"UNIAO",h:"Junção"}, {w:"VELOZ",h:"Rápido"}, {w:"EXAME",h:"Teste ou avaliação"}, {w:"MAGOA",h:"Sentimento de tristeza"}, {w:"EXODO",h:"Saída em massa"}, {w:"GORJA",h:"Garganta ou entrada"}, {w:"VIGOR",h:"Força e energia"}],
-    6: [{w:"JARDIM",h:"Local com flores"}, {w:"FUTURO",h:"Amanhã"}, {w:"BRANCO",h:"Cor clara"}, {w:"ESCURO",h:"Sem luz"}, {w:"ESTUDO",h:"Aprender"}, {w:"POESIA",h:"Versos"}, {w:"CIDADE",h:"Centro urbano"}, {w:"DUREZA",h:"Resistência"}, {w:"ESCOLA",h:"Local de ensino"}, {w:"FRUTAS",h:"Alimentos naturais"}, {w:"GRANDE",h:"Vasto"}, {w:"HABITO",h:"Costume"}, {w:"IRMAOS",h:"Parentesco"}, {w:"JANELA",h:"Abertura na parede"}, {w:"LEITURA",h:"Ato de ler"}, {w:"MUSICA",h:"Som harmonioso"}, {w:"NUMERO",h:"Algarismo"}, {w:"ORIGEM",h:"Princípio"}, {w:"PESSOA",h:"Indivíduo"}, {w:"QUARTO",h:"Cômodo da casa"}, {w:"REVISTA",h:"Publicação periódica"}, {w:"SORRIR",h:"Expressão de alegria"}, {w:"TREINO",h:"Exercício"}, {w:"VIAGEM",h:"Deslocamento"}, {w:"XADREZ",h:"Jogo de tabuleiro"}, {w:"MERITO",h:"Valor ou merecimento"}, {w:"ANSIA",h:"Desejo forte ou agonia"}, {w:"DEBITO",h:"Dívida financeira"}, {w:"CORTES",h:"Pessoa educada"}, {w:"INDICE",h:"Lista ou indicador"}]
-};
+    6: [
+    {w:"JARDIM", h:"Local com flores"}, 
+    {w:"FUTURO", h:"O dia de amanhã"}, 
+    {w:"BRANCO", h:"Cor da neve"}, 
+    {w:"ESCURO", h:"Ausência de luz"}, 
+    {w:"ESTUDO", h:"Ato de aprender"}, 
+    {w:"POESIA", h:"Texto em versos"}, 
+    {w:"CIDADE", h:"Centro urbano"}, 
+    {w:"DUREZA", h:"Qualidade do que é rijo"}, 
+    {w:"ESCOLA", h:"Local de ensino"}, 
+    {w:"FRUTAS", h:"Alimentos naturais"}, 
+    {w:"GRANDE", h:"Algo vasto ou amplo"}, 
+    {w:"HABITO", h:"Costume repetido"}, 
+    {w:"IRMAOS", h:"Parentesco próximo"}, 
+    {w:"JANELA", h:"Abertura para luz"}, 
+    {w:"LIVROS", h:"Objetos de leitura"}, /* Ajustado de LEITURA */
+    {w:"MUSICA", h:"Som harmonioso"}, 
+    {w:"NUMERO", h:"Algarismo matemático"}, 
+    {w:"ORIGEM", h:"Onde tudo começa"}, 
+    {w:"PESSOA", h:"Indivíduo humano"}, 
+    {w:"QUARTO", h:"Cômodo de dormir"}, 
+    {w:"REVISTA", h:"Leitura periódica"}, /* Revista tem 7 letras! Corrigido abaixo */
+    {w:"JORNAL", h:"Notícias diárias"}, /* Substituído REVISTA */
+    {w:"SORRIR", h:"Expressão de alegria"}, 
+    {w:"TREINO", h:"Prática de exercício"}, 
+    {w:"VIAGEM", h:"Ato de deslocar-se"}, 
+    {w:"XADREZ", h:"Jogo de estratégia"}, 
+    {w:"MERITO", h:"Valor ou merecimento"}, 
+    {w:"ANSEIO", h:"Desejo muito forte"}, 
+    {w:"DEBITO", h:"Dívida financeira"}, 
+    {w:"CORTEZ", h:"Pessoa educada"}, 
+    {w:"INDICE", h:"Lista indicadora"}
+]
 
 let state = {
     target: "", hint: "", size: 5, attempts: 0, locked: false, currentGuess: [], cursorIndex: 0,
